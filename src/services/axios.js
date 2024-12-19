@@ -4,7 +4,12 @@ import axios from "axios";
 
 const useAxios = () => {
   const store = useAuthStore();
+  const token = store.$state.token;
   const { toast } = useToast();
+
+  const instance = axios.create({
+    timeout: 5000,
+  });
 
   let isRefreshing = false;
   let refreshSubscribers = [];
