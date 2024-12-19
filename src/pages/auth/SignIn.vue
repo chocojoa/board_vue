@@ -1,5 +1,5 @@
 <script setup>
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Baby } from "lucide-vue-next";
@@ -7,6 +7,16 @@ import { Baby } from "lucide-vue-next";
 import SignInForm from "@/components/form/SignInForm.vue";
 import SignInFormSchema from "@/components/formSchema/SignInFormSchema";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store";
+import useAxios from "@/services/axios";
+import { useToast } from "@/components/ui/toast";
+
+const store = useAuthStore();
+
+const api = useAxios();
+const router = useRouter();
+
+const { toast } = useToast();
 
 const formSchema = toTypedSchema(SignInFormSchema());
 const form = useForm({
@@ -14,8 +24,45 @@ const form = useForm({
 });
 
 const onSubmit = form.handleSubmit((values) => {
-  console.log("Form submitted!", values);
+  signIn(values);
 });
+
+const signIn = (data) => {
+  api({
+    url: "/api/auth/signIn",
+    method: "POST",
+    data,
+  }).then((response) => {
+    const data = response.data.data;
+    store.signIn(data);
+    const accessToken = data.token.accessToken;
+    const userId = data.user.userId;
+    fetchUserMenus(accessToken, userId);
+  });
+};
+
+const fetchUserMenus = (accessToken, userId) => {
+  api({
+    url: `/api/common/userMenu/${userId}`,
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+    .then((response) => {
+      store.setUserMenus(response.data.data);
+      router.push("/");
+    })
+    .catch((data) => {
+      console.log(data);
+      f;
+      toast({
+        variant: "destructive",
+        title: "문제가 발생하였습니다.",
+        description: data.message,
+      });
+    });
+};
 </script>
 
 <template>

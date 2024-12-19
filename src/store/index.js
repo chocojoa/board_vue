@@ -1,12 +1,11 @@
 import { defineStore } from "pinia";
 
-const piniaState = JSON.parse(localStorage.getItem("piniaState"));
-
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    isAuthenticated: piniaState?.isAuthenticated || false,
-    token: piniaState?.token || "",
-    user: piniaState?.user || "",
+    isAuthenticated: false,
+    token: "",
+    user: "",
+    userMenus: [],
   }),
   getters: {
     getUser() {
@@ -14,6 +13,9 @@ export const useAuthStore = defineStore("auth", {
     },
     getToken() {
       return this.token;
+    },
+    getUserMenus() {
+      return this.userMenus;
     },
   },
   actions: {
@@ -27,5 +29,9 @@ export const useAuthStore = defineStore("auth", {
       this.token = "";
       this.user = "";
     },
+    setUserMenus(userMenus) {
+      this.userMenus = userMenus;
+    },
   },
+  persist: true,
 });

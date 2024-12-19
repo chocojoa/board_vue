@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { RouterLink } from "vue-router";
+<script setup>
+import { RouterLink, useRouter } from "vue-router";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Baby } from "lucide-vue-next";
@@ -7,6 +7,12 @@ import { Baby } from "lucide-vue-next";
 import UserForm from "@/components/form/UserForm.vue";
 import userFormSchema from "@/components/formSchema/UserFormSchema";
 import { Button } from "@/components/ui/button";
+import useAxios from "@/services/axios";
+import { useToast } from "@/components/ui/toast";
+
+const api = useAxios();
+const router = useRouter();
+const toast = useToast();
 
 const formSchema = toTypedSchema(userFormSchema());
 const form = useForm({
@@ -14,8 +20,29 @@ const form = useForm({
 });
 
 const onSubmit = form.handleSubmit((values) => {
-  console.log("Form submitted!", values);
+  signUp(values);
 });
+
+const signUp = (data) => {
+  api({
+    url: "/api/auth/signUp",
+    method: "POST",
+    data,
+  })
+    .then(() => {
+      toast({
+        title: "계정이 생성되었습니다.",
+      });
+      router.push("/auth/signIn");
+    })
+    .catch((data) => {
+      toast({
+        variant: "destructive",
+        title: "문제가 발생하였습니다.",
+        description: data?.response.data.message,
+      });
+    });
+};
 </script>
 
 <template>
